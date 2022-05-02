@@ -72,7 +72,6 @@ class KtTrie : AbstractMutableSet<String>(), MutableSet<String> {
      */
     override fun iterator(): MutableIterator<String> = TrieIterator()
     inner class TrieIterator : MutableIterator<String> {
-        private var currentWord: String? = null
         private val allWords = mutableListOf<String>()
 
         // Трудоемкость: О(N - сумма длин всех слов в худшем случае)
@@ -88,6 +87,7 @@ class KtTrie : AbstractMutableSet<String>(), MutableSet<String> {
         }
 
         private val numberOfWords = allWords.size
+        private var currentWord: String? = null
         private var currentWordNumber = 0
 
         // Трудоемкость: O(1)
@@ -108,10 +108,9 @@ class KtTrie : AbstractMutableSet<String>(), MutableSet<String> {
         // Трудоемкость: О(N - длина самого длинного слова в худшем случае)
         // Ресурсоемкость: О(1)
         override fun remove() {
-            if (currentWord != null) {
-                remove(currentWord)
-                currentWord = null
-            } else throw IllegalStateException()
+            if (currentWord == null) throw IllegalStateException()
+            remove(currentWord)
+            currentWord = null
         }
     }
 }
