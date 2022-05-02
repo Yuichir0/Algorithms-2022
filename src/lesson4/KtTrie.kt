@@ -70,8 +70,48 @@ class KtTrie : AbstractMutableSet<String>(), MutableSet<String> {
      *
      * Сложная
      */
-    override fun iterator(): MutableIterator<String> {
-        TODO()
-    }
+    override fun iterator(): MutableIterator<String> = TrieIterator()
+    inner class TrieIterator : MutableIterator<String> {
+        private var currentWord: String? = null
+        private val allWords = mutableListOf<String>()
 
+        // Трудоемкость: О(N - сумма длин всех слов в худшем случае)
+        // Ресурсоемкость: О(V - количество слов)
+        private fun createListOfWords(word: String, currentNode: Node) {
+            for (char in currentNode.children)
+                if (char.key != 0.toChar()) createListOfWords(word + char.key, char.value)
+                else allWords.add(word)
+        }
+
+        init {
+            createListOfWords("", root)
+        }
+
+        private val numberOfWords = allWords.size
+        private var currentWordNumber = 0
+
+        // Трудоемкость: O(1)
+        // Ресурсоемкость: О(1)
+        override fun hasNext(): Boolean = currentWordNumber < numberOfWords
+
+        // Трудоемкость: О(1)
+        // Ресурсоемкость: О(1)
+        override fun next(): String {
+            if (hasNext()) {
+                currentWord = allWords[currentWordNumber]
+                currentWordNumber++
+                return currentWord as String
+            }
+            throw NoSuchElementException()
+        }
+
+        // Трудоемкость: О(N - длина самого длинного слова в худшем случае)
+        // Ресурсоемкость: О(1)
+        override fun remove() {
+            if (currentWord != null) {
+                remove(currentWord)
+                currentWord = null
+            } else throw IllegalStateException()
+        }
+    }
 }
