@@ -1,5 +1,7 @@
 package lesson5
 
+import java.util.NoSuchElementException
+
 /**
  * Множество(таблица) с открытой адресацией на 2^bits элементов без возможности роста.
  */
@@ -13,6 +15,8 @@ class KtOpenAddressingSet<T : Any>(private val bits: Int) : AbstractMutableSet<T
     private val storage = Array<Any?>(capacity) { null }
 
     override var size: Int = 0
+
+    private class Deleted
 
     /**
      * Индекс в таблице, начиная с которого следует искать данный элемент
@@ -51,7 +55,7 @@ class KtOpenAddressingSet<T : Any>(private val bits: Int) : AbstractMutableSet<T
         val startingIndex = element.startingIndex()
         var index = startingIndex
         var current = storage[index]
-        while (current != null) {
+        while (current != null && current !is Deleted) {
             if (current == element) {
                 return false
             }
@@ -75,8 +79,21 @@ class KtOpenAddressingSet<T : Any>(private val bits: Int) : AbstractMutableSet<T
      *
      * Средняя
      */
+
+    // Трудоемкость: O(1)
+    // Ресурсоемкость: О(1)
     override fun remove(element: T): Boolean {
-        TODO()
+        var index = element.startingIndex()
+        do {
+            val current = storage[index]
+            if (current == element) {
+                storage[index] = Deleted()
+                size--
+                return true
+            }
+            index = (index + 1) % capacity
+        } while (current != null && current !is Deleted)
+        return false
     }
 
     /**
@@ -89,7 +106,39 @@ class KtOpenAddressingSet<T : Any>(private val bits: Int) : AbstractMutableSet<T
      *
      * Средняя (сложная, если поддержан и remove тоже)
      */
-    override fun iterator(): MutableIterator<T> {
-        TODO("not implemented")
+    override fun iterator(): MutableIterator<T> = OpenAddressingSetIterator()
+    inner class OpenAddressingSetIterator : MutableIterator<T> {
+        private var element: T? = null
+        private var elementNumber = 0
+        private val numberOfElements = size
+        private var index = -1
+
+        // Трудоемкость: O(1)
+        // Ресурсоемкость: О(1)
+        override fun hasNext(): Boolean = elementNumber < numberOfElements
+
+        // Трудоемкость: О(N)
+        // Ресурсоемкость: О(1)
+        @Suppress("unchecked_cast")
+        override fun next(): T {
+            if (hasNext()) {
+                do {
+                    index++
+                    element = storage[index] as T?
+                } while (element == null || element is Deleted)
+                elementNumber++
+                return element as T
+            }
+            throw NoSuchElementException()
+        }
+
+        // Трудоемкость: О(1)
+        // Ресурсоемкость: О(1)
+        override fun remove() {
+            if (element == null) throw IllegalStateException()
+            element = null
+            storage[index] = Deleted()
+            size--
+        }
     }
 }

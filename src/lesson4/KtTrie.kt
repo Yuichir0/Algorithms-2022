@@ -75,7 +75,7 @@ class KtTrie : AbstractMutableSet<String>(), MutableSet<String> {
         private val allWords = mutableListOf<String>()
 
         // Трудоемкость: О(N - сумма длин всех слов в худшем случае)
-        // Ресурсоемкость: О(V - количество слов)
+        // Ресурсоемкость: О(V - сумма длин всех слов)
         private fun createListOfWords(word: String, currentNode: Node) {
             for (char in currentNode.children)
                 if (char.key != 0.toChar()) createListOfWords(word + char.key, char.value)
