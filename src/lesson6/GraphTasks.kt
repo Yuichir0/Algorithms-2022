@@ -2,6 +2,8 @@
 
 package lesson6
 
+import lesson6.impl.GraphBuilder
+
 /**
  * Эйлеров цикл.
  * Средняя
@@ -60,8 +62,25 @@ fun Graph.findEulerLoop(): List<Graph.Edge> {
  * |
  * J ------------ K
  */
+
+//Трудоемкость: O(V * E) V - Vertices, E - Edges
+//Ресурсоемкость: O(V)
 fun Graph.minimumSpanningTree(): Graph {
-    TODO()
+    if (edges.isEmpty()) return this
+    val visited = mutableSetOf<String>()
+    val answer = GraphBuilder()
+    for (vertice in vertices) {
+        for (neighbor in getNeighbors(vertice)) {
+            if (!visited.contains(neighbor.name) || !visited.contains(vertice.name)) {
+                visited.add(neighbor.name)
+                visited.add(vertice.name)
+                answer.addVertex(neighbor.name)
+                answer.addVertex(vertice.name)
+                answer.addConnection(vertice, neighbor)
+            }
+        }
+    }
+    return answer.build()
 }
 
 /**
@@ -112,8 +131,24 @@ fun Graph.largestIndependentVertexSet(): Set<Graph.Vertex> {
  *
  * Ответ: A, E, J, K, D, C, H, G, B, F, I
  */
+
+//Трудоемкость: O(V!*V) V - Vertices
+//Ресурсоемкость: O(V)
 fun Graph.longestSimplePath(): Path {
-    TODO()
+    if (edges.isEmpty()) return Path()
+    var answer = Path()
+    val queue = mutableListOf<Path>()
+    for (vertice in vertices) {
+        queue.add(Path(vertice))
+        if (answer.length == vertices.size) return answer
+        do {
+            val currentPath = queue.removeLast()
+            if (answer.length < currentPath.length) answer = currentPath
+            for (neighbour in getNeighbors(currentPath.vertices[currentPath.length]))
+                if (neighbour !in currentPath) queue.add(Path(currentPath, this, neighbour))
+        } while (queue.isNotEmpty())
+    }
+    return answer
 }
 
 /**

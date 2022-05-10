@@ -2,6 +2,7 @@
 
 package lesson7
 
+
 /**
  * Наибольшая общая подпоследовательность.
  * Средняя
@@ -14,8 +15,32 @@ package lesson7
  * Если есть несколько самых длинных общих подпоследовательностей, вернуть любую из них.
  * При сравнении подстрок, регистр символов *имеет* значение.
  */
+
+// Трудоемкость: O(N * M), N - Длина первой строки, M - Длина второй строки
+// Ресурсоемкость: O(N * M)
 fun longestCommonSubSequence(first: String, second: String): String {
-    TODO()
+    if (first == second) return first
+    if (first.isEmpty() || second.isEmpty()) return ""
+    var n = first.length
+    var m = second.length
+    val answer = StringBuilder()
+    val matrix = Array(first.length + 1) { IntArray(second.length + 1) }
+    //Заполнение матрицы
+    for (i in 1..first.length) {
+        for (j in 1..second.length) {
+            if (first[i - 1] == second[j - 1]) matrix[i][j] = matrix[i - 1][j - 1] + 1
+            else matrix[i][j] = maxOf(matrix[i - 1][j], matrix[i][j - 1])
+        }
+    }
+    // Восстановление результата
+    while (n > 0 && m > 0) {
+        if (matrix[n][m - 1] == matrix[n][m]) n++
+        else if (matrix[n][m] == matrix[n - 1][m]) m++
+        else answer.append(first[n - 1])
+        n--
+        m--
+    }
+    return answer.reverse().toString()
 }
 
 /**
@@ -30,8 +55,42 @@ fun longestCommonSubSequence(first: String, second: String): String {
  * то вернуть ту, в которой числа расположены раньше (приоритет имеют первые числа).
  * В примере ответами являются 2, 8, 9, 12 или 2, 5, 9, 12 -- выбираем первую из них.
  */
+
+// Трудоемкость: O(N * log(N))
+// Ресурсоемкость: O(N)
 fun longestIncreasingSubSequence(list: List<Int>): List<Int> {
-    TODO()
+    if (list.isEmpty()) return list
+    var maxLength = 0
+    val previous = IntArray(list.size)
+    val position = IntArray(list.size + 1)
+    val d = IntArray(list.size + 1)
+    d.fill(Int.MIN_VALUE)
+    d[0] = Int.MAX_VALUE
+
+    for (i in list.size - 1 downTo 0) {
+        // Бинарный поиск
+        var a = 1
+        var b: Int
+        var c = maxLength
+        while (a <= c) {
+            b = (a + c) / 2
+            if (list[position[b]] >= list[i]) a = b + 1 else c = b - 1
+        }
+        if (d[a - 1] > list[i] && d[a] < list[i]) {
+            d[a] = list[i]
+            previous[i] = position[a - 1]
+            position[a] = i
+            if (a > maxLength) maxLength = a
+        }
+    }
+    // Восстановление результата
+    val answer = mutableListOf<Int>()
+    var p = position[maxLength]
+    for (i in maxLength - 1 downTo 0) {
+        answer.add(list[p])
+        p = previous[p]
+    }
+    return answer
 }
 
 /**
